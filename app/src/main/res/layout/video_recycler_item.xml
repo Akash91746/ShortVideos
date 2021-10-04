@@ -26,6 +26,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginBottom="@dimen/medium_margin"
+            android:layout_gravity="center"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.ShortVideos.CircularImageView"
             app:srcCompat="@drawable/ic_launcher_background" />
 
@@ -33,6 +34,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/ic_filled_favorite_art"
+            android:layout_gravity="center"
+            android:contentDescription="@string/like_button_desc"
             app:tint="@color/white" />
 
         <TextView
@@ -40,7 +43,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLength="4"
-            android:text="1212"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.ShortVideos.Body2" />
 
@@ -49,6 +51,8 @@
             android:layout_height="40dp"
             android:layout_marginTop="@dimen/medium_margin"
             android:background="@drawable/ic_baseline_comment_24"
+            android:layout_gravity="center"
+            android:contentDescription="@string/comments_button_desc"
             app:tint="@color/white" />
 
         <TextView
@@ -57,7 +61,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/large_margin"
             android:maxLength="4"
-            android:text="12"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.ShortVideos.Body2" />
 
