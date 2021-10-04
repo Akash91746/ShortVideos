@@ -21,13 +21,12 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Timber.plant(new Timber.DebugTree());
-
         final LeastRecentlyUsedCacheEvictor leastRecentlyUsedCacheEvictor =
                 new LeastRecentlyUsedCacheEvictor(Constants.EXO_PLAYER_CACHE_SIZE);
 
         final ExoDatabaseProvider databaseProvider = new ExoDatabaseProvider(this);
 
-        final File cacheDir = new File(this.getCacheDir(), "media");
+        final File cacheDir = new File(String.valueOf(getCacheDir()));
         simpleCache = new SimpleCache(cacheDir, leastRecentlyUsedCacheEvictor, databaseProvider);
     }
 }

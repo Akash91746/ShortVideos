@@ -1,11 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.exoplayer2.ui.PlayerView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/video_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:show_buffering="when_playing"
-    app:controller_layout_id="@layout/exo_player_controls"
-    >
+    android:layout_height="match_parent">
 
-</com.google.android.exoplayer2.ui.PlayerView>
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:controller_layout_id="@layout/exo_player_controls"
+        app:resize_mode="fill" />
+
+    <LinearLayout
+        android:id="@+id/container_basic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/small_margin"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profile_image_view"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="@dimen/medium_margin"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.ShortVideos.CircularImageView"
+            app:srcCompat="@drawable/ic_launcher_background" />
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ic_filled_favorite_art"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/like_count_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLength="4"
+            android:text="1212"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.ShortVideos.Body2" />
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="@dimen/medium_margin"
+            android:background="@drawable/ic_baseline_comment_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/comment_count_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/large_margin"
+            android:maxLength="4"
+            android:text="12"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.ShortVideos.Body2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/large_margin"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/container_basic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/container_basic">
+
+        <TextView
+            android:id="@+id/username_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/small_margin"
+            android:text="@string/username_placeholder"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/description_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="3"
+            android:text="@string/description_placeholder"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

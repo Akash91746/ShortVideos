@@ -1,7 +1,8 @@
 package com.android.example.shortvideos.util;
 
 public abstract class Result<T> {
-    private Result() {}
+    private Result() {
+    }
 
     public static final class Success<T> extends Result<T> {
         public T data;

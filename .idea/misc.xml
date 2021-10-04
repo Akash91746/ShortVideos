@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/android_apps/ShortVideos/app/src/main/res/drawable/ic_filled_favorite_art.xml" value="0.35833333333333334" />
         <entry key="..\:/android_apps/ShortVideos/app/src/main/res/layout/activity_main.xml" value="0.36277173913043476" />
         <entry key="..\:/android_apps/ShortVideos/app/src/main/res/layout/exo_player_controls.xml" value="0.3591485507246377" />
         <entry key="..\:/android_apps/ShortVideos/app/src/main/res/layout/fragment_home_screen.xml" value="0.36277173913043476" />

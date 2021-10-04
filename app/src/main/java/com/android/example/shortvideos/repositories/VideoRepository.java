@@ -16,11 +16,11 @@ public class VideoRepository {
 
     private final VideosApi videosApi;
 
-    public VideoRepository(VideosApi videosApi){
+    public VideoRepository(VideosApi videosApi) {
         this.videosApi = videosApi;
     }
 
-    public MutableLiveData<List<MediaData>> fetchData(){
+    public MutableLiveData<List<MediaData>> fetchData() {
         MutableLiveData<List<MediaData>> data = new MutableLiveData<>();
 
         Call<VideoData> response = videosApi.getVideoData();
@@ -30,8 +30,8 @@ public class VideoRepository {
             public void onResponse(@NonNull Call<VideoData> call, @NonNull Response<VideoData> response) {
                 Timber.d("onReceive: Server response : %s", response.toString());
 
-                if (response.isSuccessful()){
-                    if (response.body()!=null) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
                         data.postValue(response.body().getMsg());
                     }
                 }

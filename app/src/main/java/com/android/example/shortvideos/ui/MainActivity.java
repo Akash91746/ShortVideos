@@ -1,16 +1,16 @@
 package com.android.example.shortvideos.ui;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.PagerSnapHelper;
-import dagger.hilt.android.AndroidEntryPoint;
-
 import android.os.Build;
 import android.os.Bundle;
 
 import com.android.example.shortvideos.adapters.VideoListAdapter;
 import com.android.example.shortvideos.databinding.ActivityMainBinding;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         dataBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(dataBinding.getRoot());
 
-       mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         VideoListAdapter adapter = new VideoListAdapter(new VideoListAdapter.MediaDataDiffUtil());
         dataBinding.videoRecyclerView.setAdapter(adapter);

@@ -28,44 +28,52 @@ public class MediaData {
     @Expose
     private String gif;
 
+    @SerializedName("user_info")
+    @Expose
+    private UserInfo user_info;
+
+    @SerializedName("count")
+    @Expose
+    private Count count;
+
+    @SerializedName("description")
+    @Expose
+    private String description;
+
     public String getUid() {
         return uid;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
 
     public String get_id() {
         return _id;
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
 
     public String getVideo() {
         return video;
     }
 
-    public void setVideo(String video) {
-        this.video = video;
-    }
 
     public String getThum() {
         return thum;
     }
 
-    public void setThum(String thum) {
-        this.thum = thum;
-    }
 
     public String getGif() {
         return gif;
     }
 
-    public void setGif(String gif) {
-        this.gif = gif;
+    public UserInfo getUser_info() {
+        return user_info;
+    }
+
+    public Count getCount() {
+        return count;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @NonNull
@@ -83,13 +91,13 @@ public class MediaData {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof MediaData)) return false;
         MediaData mediaData = (MediaData) o;
-        return uid.equals(mediaData.uid) && _id.equals(mediaData._id) && video.equals(mediaData.video) && thum.equals(mediaData.thum) && gif.equals(mediaData.gif);
+        return uid.equals(mediaData.uid) && _id.equals(mediaData._id) && video.equals(mediaData.video) && Objects.equals(thum, mediaData.thum) && Objects.equals(gif, mediaData.gif) && user_info.equals(mediaData.user_info) && count.equals(mediaData.count);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uid, _id, video, thum, gif);
+        return Objects.hash(uid, _id, video, thum, gif, user_info, count);
     }
 }
