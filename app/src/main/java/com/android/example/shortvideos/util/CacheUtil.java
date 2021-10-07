@@ -5,15 +5,16 @@ import android.content.Context;
 import android.net.Uri;
 
 import com.android.example.shortvideos.MyApplication;
+import com.android.example.shortvideos.R;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.google.android.exoplayer2.upstream.cache.CacheWriter;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
+import com.google.android.exoplayer2.util.Util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,88 +23,55 @@ import timber.log.Timber;
 
 public class CacheUtil {
 
-    private static CacheUtil INSTANCE = null;
-    private final ExecutorService executorService;
-    private final SimpleCache simpleCache;
-    private CacheDataSource cacheDataSourceFactory;
-    private DefaultDataSourceFactory defaultDataSourceFactory;
-    private HttpDataSource.Factory httpDataSourceFactory;
+    public static final SimpleCache simpleCache = MyApplication.simpleCache;
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-    private CacheUtil() {
-        executorService = Executors.newFixedThreadPool(5);
-        simpleCache = MyApplication.simpleCache;
+    public static synchronized void cacheVideos(ArrayList<String> urls, Context context) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < urls.size(); i++) {
+                    Uri url = Uri.parse(urls.get(i));
+
+                    DataSpec dataSpec = new DataSpec(url, 0, 300 * 1024);
+                    DefaultDataSourceFactory defaultDataSourceFactory = new DefaultDataSourceFactory(
+                            context,
+                            Util.getUserAgent(context, context.getString(R.string.app_name))
+                    );
+
+                    CacheDataSource dataSource = new CacheDataSource(simpleCache, defaultDataSourceFactory.createDataSource());
+
+                    cacheVideo(dataSource, dataSpec);
+                }
+            }
+        });
     }
 
-    public static CacheUtil getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new CacheUtil();
-        }
-        return INSTANCE;
-    }
-
-    public synchronized void preCacheVideo(Uri url, Context context) {
-
-
-        httpDataSourceFactory = new DefaultHttpDataSource.Factory();
-
-        cacheDataSourceFactory = new CacheDataSource.Factory()
-                .setCache(simpleCache)
-                .setUpstreamDataSourceFactory(httpDataSourceFactory)
-                .createDataSource();
-
-        DataSpec dataSpec = new DataSpec(url, 0, 36000);
-
+    public static synchronized void cacheVideo(
+            CacheDataSource cacheDataSource,
+            DataSpec dataSpec
+    ) {
         CacheWriter.ProgressListener listener = (requestLength, bytesCached, newBytesCached) -> {
             Double downloadProgress = (bytesCached * 100.0 / requestLength);
 
-            Timber.d("Cache Progress %s %s", downloadProgress, url.toString());
+            Timber.d("Cache Progress %s %s", downloadProgress, dataSpec.uri.toString());
+            Timber.d("Cached Space = %s", simpleCache.getCacheSpace());
         };
 
-        cacheVideo(cacheDataSourceFactory, dataSpec, listener);
-    }
-
-    public synchronized void cacheVideo(
-            CacheDataSource cacheDataSource,
-            DataSpec dataSpec,
-            CacheWriter.ProgressListener progressListener
-    ) {
         executorService.execute(() -> {
             try {
                 CacheWriter cacheWriter = new CacheWriter(
                         cacheDataSource,
                         dataSpec,
                         null,
-                        progressListener
+                        listener
                 );
                 cacheWriter.cache();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public CacheDataSource getCacheDataSourceFactory() {
-        return cacheDataSourceFactory;
-    }
-
-    public DefaultDataSourceFactory getDefaultDataSourceFactory() {
-        return defaultDataSourceFactory;
-    }
-
-    public HttpDataSource.Factory getHttpDataSourceFactory() {
-        if (httpDataSourceFactory == null) {
-            return new DefaultHttpDataSource.Factory();
-        }
-        return httpDataSourceFactory;
-    }
-
-    public SimpleCache getSimpleCache() {
-        return this.simpleCache;
-    }
 
 }

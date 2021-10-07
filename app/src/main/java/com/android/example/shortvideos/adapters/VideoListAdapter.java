@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import com.android.example.shortvideos.R;
 import com.android.example.shortvideos.databinding.VideoRecyclerItemBinding;
 import com.android.example.shortvideos.models.MediaData;
 import com.android.example.shortvideos.util.CacheUtil;
@@ -12,15 +13,22 @@ import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.google.android.exoplayer2.util.Util;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import timber.log.Timber;
 
 public class VideoListAdapter extends
         ListAdapter<MediaData, VideoListAdapter.ViewHolder> {
@@ -33,7 +41,7 @@ public class VideoListAdapter extends
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return ViewHolder.from(parent);
+        return ViewHolder.from(parent, this);
     }
 
     @Override
@@ -59,44 +67,88 @@ public class VideoListAdapter extends
         holder.stopPlayer();
     }
 
+    public ArrayList<String> getNextUrlToCache(int currentPos) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        String url1 = getCurrentList().get(currentPos + 1).getVideo();
+        String url2 = getCurrentList().get(currentPos + 2).getVideo();
+        String url3 = getCurrentList().get(currentPos + 3).getVideo();
+
+        arrayList.add(url1);
+        arrayList.add(url2);
+        arrayList.add(url3);
+        Timber.d("Array List %s", arrayList);
+        return arrayList;
+    }
+
+    @NonNull
+    @Override
+    public List<MediaData> getCurrentList() {
+        return super.getCurrentList();
+    }
+
     protected static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final VideoRecyclerItemBinding dataBinding;
         private SimpleExoPlayer exoPlayer;
-        private DataSource.Factory cacheDataSourceFactory;
-        private MediaSource mediaSource;
+        private final VideoListAdapter adapter;
+        MediaItem item;
+        private CacheDataSource.Factory cacheDataSourceFactory;
+        private MediaSourceFactory mediaSource;
 
-        private ViewHolder(@NonNull VideoRecyclerItemBinding dataBinding) {
+        private ViewHolder(@NonNull VideoRecyclerItemBinding dataBinding, VideoListAdapter adapter) {
             super(dataBinding.getRoot());
             this.dataBinding = dataBinding;
+            this.adapter = adapter;
         }
 
-        public static ViewHolder from(@NonNull ViewGroup parent) {
+        public static ViewHolder from(@NonNull ViewGroup parent, VideoListAdapter adapter) {
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             VideoRecyclerItemBinding dataBinding = VideoRecyclerItemBinding.inflate(layoutInflater, parent, false);
-            return new ViewHolder(dataBinding);
+            return new ViewHolder(dataBinding, adapter);
         }
 
         protected void onBind(MediaData data) {
 
-            final Context context = dataBinding.getRoot().getContext().getApplicationContext();
+            cacheData(data);
+            setUpUserInfo(data);
+        }
 
-            Uri uri = Uri.parse(data.getVideo());
-            MediaItem item = new MediaItem.Builder().setUri(uri).setCustomCacheKey(uri.toString()).build();
+        private void cacheData(MediaData mediaData) {
+            Context context = dataBinding.getRoot().getContext();
 
-            CacheUtil cacheUtil = CacheUtil.getInstance();
-            cacheUtil.preCacheVideo(uri, context);
+            Uri videoUrl = Uri.parse(mediaData.getVideo());
 
-            cacheDataSourceFactory = new CacheDataSource.Factory()
-                    .setCache(cacheUtil.getSimpleCache())
-                    .setUpstreamDataSourceFactory(cacheUtil.getHttpDataSourceFactory());
+            DefaultDataSourceFactory defaultDataSourceFactory = new DefaultDataSourceFactory(
+                    context,
+                    Util.getUserAgent(context, context.getString(R.string.app_name))
+            );
 
-            mediaSource = new ProgressiveMediaSource
-                    .Factory(cacheDataSourceFactory)
-                    .createMediaSource(item);
+            CacheDataSource.Factory factory = new CacheDataSource
+                    .Factory()
+                    .setCache(CacheUtil.simpleCache)
+                    .setUpstreamDataSourceFactory(defaultDataSourceFactory);
 
-            setUpExoPlayer();
+            CacheUtil.cacheVideos(adapter.getNextUrlToCache(getAbsoluteAdapterPosition()), context);
 
+            MediaSource mediaSource =
+                    new ProgressiveMediaSource
+                            .Factory(factory)
+                            .createMediaSource(MediaItem.fromUri(videoUrl));
+
+            ConcatenatingMediaSource concatenatingMediaSource = new ConcatenatingMediaSource();
+            concatenatingMediaSource.addMediaSource(mediaSource);
+
+            exoPlayer = new SimpleExoPlayer.Builder(context)
+                    .build();
+
+            exoPlayer.addMediaSource(concatenatingMediaSource);
+            exoPlayer.prepare();
+
+            dataBinding.videoView.setPlayer(exoPlayer);
+            exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
+        }
+
+        private void setUpUserInfo(MediaData data) {
             String profileUrl = data.getUser_info().getProfile_pic();
 
             Glide.with(dataBinding.profileImageView)
@@ -119,25 +171,8 @@ public class VideoListAdapter extends
 
         protected void initializePlayer() {
 
-            if (exoPlayer == null) {
-                setUpExoPlayer();
-            }
-            exoPlayer.setMediaSource(mediaSource);
-            exoPlayer.prepare();
             exoPlayer.play();
             dataBinding.videoView.hideController();
-        }
-
-        private void setUpExoPlayer() {
-            Context context = dataBinding.getRoot().getContext();
-
-            exoPlayer = new SimpleExoPlayer.Builder(context)
-                    .setMediaSourceFactory(new ProgressiveMediaSource.Factory(cacheDataSourceFactory))
-                    .build();
-            dataBinding.videoView.setPlayer(exoPlayer);
-            exoPlayer.addMediaSource(mediaSource);
-            exoPlayer.prepare();
-            exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
         }
 
         protected void stopPlayer() {
