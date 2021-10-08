@@ -27,22 +27,19 @@ public class CacheUtil {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public static synchronized void cacheVideos(ArrayList<String> urls, Context context) {
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < urls.size(); i++) {
-                    Uri url = Uri.parse(urls.get(i));
+        executorService.execute(() -> {
+            for (int i = 0; i < urls.size(); i++) {
+                Uri url = Uri.parse(urls.get(i));
 
-                    DataSpec dataSpec = new DataSpec(url, 0, 300 * 1024);
-                    DefaultDataSourceFactory defaultDataSourceFactory = new DefaultDataSourceFactory(
-                            context,
-                            Util.getUserAgent(context, context.getString(R.string.app_name))
-                    );
+                DataSpec dataSpec = new DataSpec(url, 0, 400 * 1024);
+                DefaultDataSourceFactory defaultDataSourceFactory = new DefaultDataSourceFactory(
+                        context,
+                        Util.getUserAgent(context, context.getString(R.string.app_name))
+                );
 
-                    CacheDataSource dataSource = new CacheDataSource(simpleCache, defaultDataSourceFactory.createDataSource());
+                CacheDataSource dataSource = new CacheDataSource(simpleCache, defaultDataSourceFactory.createDataSource());
 
-                    cacheVideo(dataSource, dataSpec);
-                }
+                cacheVideo(dataSource, dataSpec);
             }
         });
     }

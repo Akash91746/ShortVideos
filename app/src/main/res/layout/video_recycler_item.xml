@@ -11,6 +11,18 @@
         app:controller_layout_id="@layout/exo_player_controls"
         app:resize_mode="fill" />
 
+    <ImageView
+        android:id="@+id/play_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/ic_baseline_play_arrow_24"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/video_view"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
     <LinearLayout
         android:id="@+id/container_basic"
         android:layout_width="wrap_content"

@@ -16,11 +16,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class MainViewModel extends ViewModel {
 
-    private final MutableLiveData<List<MediaData>> _liveData;
+    private final VideoRepository videoRepository;
+    private MutableLiveData<List<MediaData>> _liveData;
 
     @Inject
     public MainViewModel(@NonNull VideoRepository videoRepository) {
-        _liveData = videoRepository.fetchData();
+        this.videoRepository = videoRepository;
     }
 
 
@@ -28,4 +29,7 @@ public class MainViewModel extends ViewModel {
         return _liveData;
     }
 
+    public void fetchData() {
+        _liveData = videoRepository.fetchData();
+    }
 }

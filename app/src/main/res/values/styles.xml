@@ -15,4 +15,8 @@
         <item name="android:typeface">sans</item>
         <item name="android:textSize">14dp</item>
     </style>
+
+    <style name="Style.ShortVideos.ExoPlayerButton.Play" parent="ExoMediaButton.Play">
+        <item name="android:minHeight">100dp</item>
+    </style>
 </resources>
