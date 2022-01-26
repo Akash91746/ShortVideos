@@ -2,6 +2,7 @@ package com.android.example.shortvideos.repositories;
 
 import com.android.example.shortvideos.models.MediaData;
 import com.android.example.shortvideos.models.VideoData;
+import com.android.example.shortvideos.util.Result;
 
 import java.util.List;
 
@@ -40,6 +41,33 @@ public class VideoRepository {
             @Override
             public void onFailure(@NonNull Call<VideoData> call, @NonNull Throwable t) {
                 Timber.e("onFailure : %s", t.getMessage());
+            }
+        });
+
+        return data;
+    }
+
+    public MutableLiveData<Result<List<MediaData>>> getData() {
+        MutableLiveData<Result<List<MediaData>>> data = new MutableLiveData<>();
+
+        Call<VideoData> response = videosApi.getVideoData();
+
+        response.enqueue(new Callback<VideoData>() {
+            @Override
+            public void onResponse(@NonNull Call<VideoData> call, @NonNull Response<VideoData> response) {
+                Timber.d("onReceive: Server response : %s", response.toString());
+
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        data.postValue(new Result.Success<>(response.body().getMsg()));
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VideoData> call, @NonNull Throwable t) {
+                Timber.e("onFailure : %s", t.getMessage());
+                data.postValue(new Result.Error<>(t.getMessage()));
             }
         });
 

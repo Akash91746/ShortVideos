@@ -1,5 +1,6 @@
 package com.android.example.shortvideos.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import com.android.example.shortvideos.R;
 import com.android.example.shortvideos.databinding.VideoRecyclerItemBinding;
 import com.android.example.shortvideos.models.MediaData;
 import com.android.example.shortvideos.util.CacheUtil;
+import com.android.example.shortvideos.util.CustomSnapHelper;
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
@@ -25,14 +27,19 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class VideoListAdapter extends
         ListAdapter<MediaData, VideoListAdapter.ViewHolder> {
 
-    public VideoListAdapter(@NonNull DiffUtil.ItemCallback<MediaData> diffCallback) {
+    public Activity activity;
+
+    public VideoListAdapter(@NonNull DiffUtil.ItemCallback<MediaData> diffCallback, Activity activity) {
         super(diffCallback);
+        this.activity = activity;
     }
 
     @NonNull
@@ -55,13 +62,46 @@ public class VideoListAdapter extends
     @Override
     public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        holder.initializePlayer();
+        int pos = holder.getAbsoluteAdapterPosition();
+        if (pos == 0) {
+            holder.initializePlayer();
+        }
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
         holder.stopPlayer();
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.releasePlayer();
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        final PagerSnapHelper snapHelper = new CustomSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    if (layoutManager != null) {
+                        int pos = layoutManager.findFirstVisibleItemPosition();
+                        ViewHolder viewHolder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(pos);
+                        if (viewHolder != null) {
+                            viewHolder.initializePlayer();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public ArrayList<String> getNextUrlToCache(int currentPos) {
@@ -76,7 +116,6 @@ public class VideoListAdapter extends
 
         return arrayList;
     }
-
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -166,7 +205,7 @@ public class VideoListAdapter extends
 
             concatenatingMediaSource = new ConcatenatingMediaSource();
             concatenatingMediaSource.addMediaSource(mediaSource);
-
+            setUpPlayer();
         }
 
         private void setUpPlayer() {
@@ -178,7 +217,9 @@ public class VideoListAdapter extends
         }
 
         public void initializePlayer() {
-            setUpPlayer();
+            if (exoPlayer == null) {
+                setUpPlayer();
+            }
             exoPlayer.play();
             dataBinding.playButton.setVisibility(View.GONE);
             dataBinding.videoView.hideController();
@@ -186,8 +227,15 @@ public class VideoListAdapter extends
 
         public void stopPlayer() {
             if (exoPlayer != null) {
+                exoPlayer.pause();
+            }
+        }
+
+        public void releasePlayer() {
+            if (exoPlayer != null) {
                 exoPlayer.stop();
                 exoPlayer.release();
+                exoPlayer = null;
             }
         }
 

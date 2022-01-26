@@ -2,6 +2,7 @@ package com.android.example.shortvideos.ui;
 
 import com.android.example.shortvideos.models.MediaData;
 import com.android.example.shortvideos.repositories.VideoRepository;
+import com.android.example.shortvideos.util.Result;
 
 import java.util.List;
 
@@ -17,19 +18,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 public class MainViewModel extends ViewModel {
 
     private final VideoRepository videoRepository;
-    private MutableLiveData<List<MediaData>> _liveData;
+
+    private MutableLiveData<Result<List<MediaData>>> _mediaLiveData = new MutableLiveData<>();
 
     @Inject
     public MainViewModel(@NonNull VideoRepository videoRepository) {
         this.videoRepository = videoRepository;
+        getData();
     }
 
-
-    public LiveData<List<MediaData>> getLiveData() {
-        return _liveData;
+    public LiveData<Result<List<MediaData>>> getMediaLiveData() {
+        return _mediaLiveData;
     }
 
-    public void fetchData() {
-        _liveData = videoRepository.fetchData();
+    private void getData() {
+        _mediaLiveData = videoRepository.getData();
     }
 }
+

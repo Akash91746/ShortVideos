@@ -1,6 +1,7 @@
 package com.android.example.shortvideos.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -8,12 +9,16 @@ import android.view.View;
 
 import com.android.example.shortvideos.adapters.VideoListAdapter;
 import com.android.example.shortvideos.databinding.ActivityMainBinding;
+import com.android.example.shortvideos.models.MediaData;
+import com.android.example.shortvideos.util.Result;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.PagerSnapHelper;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -42,13 +47,15 @@ public class MainActivity extends AppCompatActivity {
 
         mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
-        adapter = new VideoListAdapter(new VideoListAdapter.MediaDataDiffUtil());
+        adapter = new VideoListAdapter(new VideoListAdapter.MediaDataDiffUtil(), this);
         dataBinding.videoRecyclerView.setAdapter(adapter);
 
-        final PagerSnapHelper linearSnapHelper = new PagerSnapHelper();
-        linearSnapHelper.attachToRecyclerView(dataBinding.videoRecyclerView);
-
         checkNetworkStatusAndLoadData();
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
     }
 
     public void checkNetworkStatusAndLoadData() {
@@ -59,8 +66,19 @@ public class MainActivity extends AppCompatActivity {
             snackbar.setAction("RETRY", v -> checkNetworkStatusAndLoadData());
             snackbar.show();
         } else {
-            mViewModel.fetchData();
-            mViewModel.getLiveData().observe(this, adapter::submitList);
+            mViewModel.getMediaLiveData().observe(this, new Observer<Result<List<MediaData>>>() {
+                @Override
+                public void onChanged(Result<List<MediaData>> listResult) {
+
+                    if (listResult instanceof Result.Success) {
+                        adapter.submitList(((Result.Success<List<MediaData>>) listResult).data);
+                    }
+                    if (listResult instanceof Result.Error) {
+                        String error = ((Result.Error<List<MediaData>>) listResult).exception;
+
+                    }
+                }
+            });
         }
     }
 
@@ -80,9 +98,8 @@ public class MainActivity extends AppCompatActivity {
             int pos = layoutManager.findFirstVisibleItemPosition();
             viewHolder = (VideoListAdapter.ViewHolder) dataBinding.videoRecyclerView.findViewHolderForAdapterPosition(pos);
             if (viewHolder != null) {
-                viewHolder.stopPlayer();
+                viewHolder.releasePlayer();
             }
         }
     }
-
 }
