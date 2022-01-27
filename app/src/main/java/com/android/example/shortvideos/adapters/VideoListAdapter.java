@@ -215,7 +215,7 @@ public class VideoListAdapter extends
             exoPlayer.prepare();
             exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
         }
-//master branch commit
+        
         public void initializePlayer() {
             if (exoPlayer == null) {
                 setUpPlayer();
